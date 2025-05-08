@@ -8,6 +8,82 @@ This is in contrast to common static analysis tools that achieve this by requiri
 
 While it's important to be able to easily write a Rule, it's just as important (if not more!) to write good tests for them. Like with Rubocop, Claws comes with a couple RSpec helpers that makes it easy to write test cases. Test cases are simply example Workflows that exercise a Rule's expressions, ensuring that a modification to a Rule can't accidentally affect its ability to detect known bad content.
 
+## Getting Started
+
+Claws is written in Ruby and distributed as a Ruby Gem, so you can install it using `gem`. Just point it at the [example configuration](example-config.yml) file and you should be good to go.
+
+For one off scans, you can just follow these commands:
+```
+# Install claws
+$ gem install claws-scan
+
+# Optionally, specify a version
+$ gem install claws-scan -v 0.7.5
+
+# Scan a Github Action file
+analyze -c example_config.yml -t .github/workflows/ci.yml
+```
+
+If you'd like to integrate this into your workflow like we have, this should be enough to get you started.
+
+```yaml
+name: Workflow Static Analyzer
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Analyze Github Workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Up Ruby
+        uses: ruby/setup-ruby@d8d83c3960843afb664e821fed6be52f37da5267 # v1.231.0
+        with:
+          ruby-version: '3.0'
+      # Grab your configuration file however makes sense for you
+      # We keep ours in a separate Github repo.
+      - name: Set Up Claws Config
+        run: |
+          echo ... > /tmp/claws-config.yml
+      # Optional, useful if you want Claws to run shellcheck for you
+      - name: Set Up Shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set Up Claws
+        run: |
+          gem install claws-scan -v 0.7.5
+      - name: Analyze Workflows
+        run: |
+          #!/bin/bash
+
+          # Collect all files in the .github/workflows directory
+          workflow_files=$(find .github/workflows -type f)
+
+          # Exit early if there are no workflow files
+          if [[ -z "$workflow_files" ]]; then
+            echo "No workflow files found in .github/workflows"
+            exit 0
+          fi
+
+          flags=()
+
+          # Iterate over each workflow file
+          while IFS= read -r file; do
+            echo "Processing $file"
+            flags+=("-t" "$file")
+          done <<< "$workflow_files"
+
+          # Run the analyze command with all gathered flags
+          analyze -f github -c /tmp/claws-config.yml "${flags[@]}"
+```
+
 ## Built In Rules
 
 These are all the rules that come out of the box with Claws. They can all be found in [the rules subdirectory](https://github.com/Betterment/claws/tree/main/lib/claws/rule), and some of them have configuration options.

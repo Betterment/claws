@@ -1,0 +1,17 @@
+Enabled:
+  NoContainers:
+    approved_images: ["ubuntu-latest"]
+  SpecialPermissions:
+  EmptyName:
+  RiskyTriggers:
+  UnapprovedRunners:
+    allowed_runners: ["ubuntu-latest", "macos-latest"]
+  CommandInjection:
+  AutomaticMerge:
+  UnpinnedAction:
+    trusted_authors: ["actions"]
+  UnsafeCheckout:
+  InheritedSecrets:
+  BulkPermissions:
+  Shellcheck:
+    shellcheck_bin: "/usr/bin/shellcheck"
