@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up Ruby 3.X
       uses: ruby/setup-ruby@ca041f971d66735f3e5ff1e21cc13e2d51e7e535 # v1.233.0
       with:
@@ -39,7 +39,7 @@ jobs:
     name: Publish
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Publish to RubyGems
       if: needs.build.result == 'success' || github.event.inputs.force_release == true
       run: |
