@@ -5,7 +5,7 @@ require "claws"
 require "slop"
 
 flags = Slop::Options.new
-flags.banner =  "usage: process [options] ..."
+flags.banner =  "usage: analyze [options] ..."
 flags.separator ""
 flags.separator "Options:"
 flags.string "-c", "--config", required: true
