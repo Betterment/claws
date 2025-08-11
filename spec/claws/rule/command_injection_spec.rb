@@ -55,5 +55,29 @@ RSpec.describe Claws::Rule::CommandInjection do
 
       expect(violations.count).to eq(0)
     end
+
+    it "doesn't flag non-inputs usages of github.event" do
+      violations = analyze(<<~YAML)
+        name: Greeting
+
+        on:
+          workflow_dispatch:
+            inputs:
+              name:
+                description: 'Who I should say hello to?'
+                required: true
+
+        jobs:
+          greet:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v1
+              - name: Greet
+                run: ./scripts/greet.sh "${{ github.event_name }}"
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
   end
 end
