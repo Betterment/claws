@@ -30,6 +30,27 @@ RSpec.describe Claws::Rule::CommandInjection do
       expect(violations[0].name).to eq("CommandInjection")
     end
 
+    it "flags a step with github expression without spaces" do
+      violations = analyze(<<~YAML)
+        name: Pull Request Number
+
+        on:
+          pull_request:
+
+        jobs:
+          greet:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v1
+              - name: Show PR Number
+                # This expression does not contain a space between the enclosing brace and its contents
+                run: echo "PR number is ${{github.event.pull_request.number}}"
+      YAML
+
+      expect(violations.count).to eq(1)
+    end
+
     it "doesn't flag a step if it executes a command safely" do
       violations = analyze(<<~YAML)
         name: Greeting
