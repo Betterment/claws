@@ -8,7 +8,7 @@ module Claws
         https://github.com/betterment/claws/blob/main/README.md#commandinjection
       DESC
 
-      on_step '$step.run =~ ".*{{.*(github.event|inputs)\..*}}.*"', highlight: "run"
+      on_step '$step.run =~ ".*{{.*(github\.event|inputs)\..*}}.*"', highlight: "run"
     end
   end
 end
