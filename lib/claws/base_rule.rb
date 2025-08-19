@@ -45,23 +45,23 @@ class BaseRule
   end
 
   def self.on_workflow(value, highlight: nil, debug: false)
-    (@on_workflow ||= []) << extract_value(value, highlight: highlight, debug: debug)
+    (@on_workflow ||= []) << extract_value(value, highlight:, debug:)
   end
 
   def self.on_job(value, highlight: nil, debug: false)
     highlight = highlight.to_s unless highlight.nil?
-    (@on_job ||= []) << extract_value(value, highlight: highlight, debug: debug)
+    (@on_job ||= []) << extract_value(value, highlight:, debug:)
   end
 
   def self.on_step(value, highlight: nil, debug: false)
     highlight = highlight.to_s unless highlight.nil?
-    (@on_step ||= []) << extract_value(value, highlight: highlight, debug: debug)
+    (@on_step ||= []) << extract_value(value, highlight:, debug:)
   end
 
   def self.extract_value(value, highlight: nil, debug: false)
     case value
     when String
-      { expression: parse_rule(value), highlight: highlight, debug: debug }
+      { expression: parse_rule(value), highlight:, debug: }
     when Symbol
       value
     else
