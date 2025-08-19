@@ -18,7 +18,9 @@ module Psych
     class ToRuby
       def accept(target)
         s = super(target)
-        if target.respond_to?(:line) and ![TrueClass, FalseClass, NilClass, Integer].include? s.class
+
+        # types that we cannot monkey patch into holding line information
+        if target.respond_to?(:line) and ![TrueClass, FalseClass, NilClass, Integer, Float].include? s.class
           s.instance_eval do
             extend(Locatable)
           end
@@ -49,7 +51,9 @@ module Psych
           key.line = 0 if key.respond_to? :line and key.line.nil?
           key.line += 1 if key.respond_to? :line
           key.freeze
-          if [TrueClass, FalseClass, NilClass, Integer].include? key.class
+
+          # types that we cannot monkey patch into holding line information
+          if [TrueClass, FalseClass, NilClass, Integer, Float].include? key.class
             val.line = 0 if val.respond_to? :line and val.line.nil?
             val.line += 1 if val.respond_to? :line
           end
