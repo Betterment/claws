@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary = "Analyzes your Github Actions"
   spec.description = "Analyzes your Github Actions"
   spec.homepage = "https://github.com/Betterment/claws"
-  spec.required_ruby_version = ">= 3.0"
+  spec.required_ruby_version = ">= 3.2"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/Betterment/claws"

@@ -173,7 +173,7 @@ class Workflow
     name, version = action.split("@", 2)
     author = name.split("/", 2)[0]
     local = author == "."
-    { type: "action", name: name, author: author, version: version, local: local }
+    { type: "action", name:, author:, version:, local: }
   end
 
   def extract_container_info_from_job(job)
@@ -195,8 +195,8 @@ class Workflow
 
     {
       type: "container",
-      image: image,
-      version: version,
+      image:,
+      version:,
       full: "#{image}:#{version}"
     }
   end

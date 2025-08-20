@@ -43,10 +43,10 @@ module Claws
       @detections.each do |detection|
         detection.on_workflow.each do |rule|
           violation = run_detection(
-            filename: filename,
-            detection: detection,
-            rule: rule,
-            workflow: workflow
+            filename:,
+            detection:,
+            rule:,
+            workflow:
           )
 
           violations << violation if violation
@@ -58,7 +58,7 @@ module Claws
             expression: rule[:expression],
             values: {
               data: detection.data,
-              workflow: workflow
+              workflow:
             }
           )
         end
@@ -72,11 +72,11 @@ module Claws
       @detections.each do |detection|
         detection.on_job.each do |rule|
           violation = run_detection(
-            filename: filename,
-            detection: detection,
-            rule: rule,
-            workflow: workflow,
-            job: job
+            filename:,
+            detection:,
+            rule:,
+            workflow:,
+            job:
           )
 
           violations << violation if violation
@@ -88,8 +88,8 @@ module Claws
             expression: rule[:expression],
             values: {
               data: detection.data,
-              workflow: workflow,
-              job: job
+              workflow:,
+              job:
             }
           )
         end
@@ -104,12 +104,12 @@ module Claws
       @detections.each do |detection|
         detection.on_step.each do |rule|
           violation = run_detection(
-            filename: filename,
-            detection: detection,
-            rule: rule,
-            workflow: workflow,
-            job: job,
-            step: step
+            filename:,
+            detection:,
+            rule:,
+            workflow:,
+            job:,
+            step:
           )
 
           violations << violation if violation
@@ -121,9 +121,9 @@ module Claws
             expression: rule[:expression],
             values: {
               data: detection.data,
-              workflow: workflow,
-              job: job,
-              step: step
+              workflow:,
+              job:,
+              step:
             }
           )
         end
@@ -137,19 +137,19 @@ module Claws
     def run_detection(filename:, detection:, rule:, workflow:, job: nil, step: nil) # rubocop:disable Metrics/ParameterLists
       violation = if rule.is_a? Symbol
                     get_dynamic_violation(
-                      detection: detection,
+                      detection:,
                       method: rule,
-                      workflow: workflow,
-                      job: job,
-                      step: step
+                      workflow:,
+                      job:,
+                      step:
                     )
                   else
                     get_static_violations(
-                      detection: detection,
-                      rule: rule,
-                      workflow: workflow,
-                      job: job,
-                      step: step
+                      detection:,
+                      rule:,
+                      workflow:,
+                      job:,
+                      step:
                     )
                   end
 
@@ -164,18 +164,18 @@ module Claws
     def get_dynamic_violation(detection:, method:, workflow:, job:, step:)
       detection.send(
         method,
-        workflow: workflow,
-        job: job,
-        step: step
+        workflow:,
+        job:,
+        step:
       )
     end
 
     def get_static_violations(rule:, detection:, workflow:, job:, step:)
       result = rule[:expression].eval_with(values: {
                                              data: detection.data,
-                                             workflow: workflow,
-                                             job: job,
-                                             step: step
+                                             workflow:,
+                                             job:,
+                                             step:
                                            })
 
       return unless result
