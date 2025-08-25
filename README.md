@@ -280,6 +280,18 @@ Shellcheck is a great tool for dealing with bugs or otherwise unintended effects
 
 This rule flags workflows that request write access to specific unusual permissions. While this rule cannot flag how these permissions are exercised, it serves as a warning to code reviewers that if these permissions are requested, the way they are used should be scrutinized. A reviewer may find that a permission is left over from testing and no longer needed, or that a specific permission was never needed.
 
+### CheckoutWithStaticCredentials
+
+This rule flags any uses of `actions/checkout` using static credentials. Using static credentials can pose a risk because these credentials are typically not auditable and can be tricky to rotate. In the event of an incident where they are leaked, incident response to determine the scope of impact may be tough.
+
+Where possible, the default `$GITHUB_TOKEN` should be used. Its settings can be configured directly from within the workflow. Check [the official documentation](https://docs.github.com/en/actions/tutorials/authenticate-with-github_token#modifying-the-permissions-for-the-github_token) for more information on how to do this.
+
+If you are using a deploy key via SSH to access a package or otherwise an artifact from another repository, you can instead configure the repository to grant it access explicitly to that other repository. This will give the default `$GITHUB_TOKEN` access to that repository without needing to use a deploy key. To learn more about this, [check out the official documentation](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility). This is safer than a static deploy key because the credential is short lived and access can be audited.
+
+If you need a Github Token to perform some authenticated action where the default `$GITHUB_TOKEN` doesn't do what you need, consider setting up a Github App and using [`actions/create-github-app-token`](https://github.com/actions/create-github-app-token). This will generate a short lived access token, and using an app creates a useful audit trail for what this access token can actually do. Then, use this token in just the build steps where it's needed.
+
+In some cases, a static access token or deploy key may still be necessary, especially for APIs that are not yet supported by Github App Tokens. In these cases, make sure to limit the scope of the access token to the bare minimum necessary to function.
+
 ### UnapprovedRunners
 
 This rule flags workflows that use runners that they might not need or should not use. This can come in handy when an organization has available self hosted or otherwise expensive runners but wants to be particular about when they're used.
