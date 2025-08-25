@@ -14,6 +14,7 @@ class BaseRule
               endswith: ->(string, needle) { string.to_s.end_with? needle },
               difference: ->(arr1, arr2) { arr1.difference arr2 },
               intersection: ->(arr1, arr2) { arr1.intersection arr2 },
+              get_key: ->(arr, key) { arr.fetch(key, nil) },
               count: ->(n) { n.length }
             }
           )
