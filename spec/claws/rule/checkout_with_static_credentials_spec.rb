@@ -158,5 +158,29 @@ RSpec.describe Claws::Rule::CheckoutWithStaticCredentials do
       expect(violations[0].line).to eq(10)
       expect(violations[0].name).to eq("CheckoutWithStaticCredentials")
     end
+
+    it "doesn't flag an access token generated using a github app" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          checkout:
+            runs-on: ubuntu
+            steps:
+              - name: Create GitHub App installation token
+                id: app-token
+                uses: actions/create-github-app-token@v2
+                with:
+                  app-id: ${{ vars.APP_ID }}
+                  private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+              - uses: actions/checkout@v5
+                with:
+                  repository: foo-corp/test-action
+                  token: ${{ steps.app-token.outputs.token }}
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
   end
 end

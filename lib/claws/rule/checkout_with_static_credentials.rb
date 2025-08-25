@@ -17,9 +17,9 @@ module Claws
       on_step %(
         $step.meta.action.name == "actions/checkout" &&
         (
-          get_key($step.with, "ssh-key") =~ ".*secrets..*" ||
-          get_key($step.with, "ssh-key") =~ ".*env..*" ||
-          get_key($step.with, "ssh-key") =~ ".*vars..*" ||
+          get_key($step.with, "ssh-key") =~ "{{.*secrets\..*" ||
+          get_key($step.with, "ssh-key") =~ "{{.*env\..*" ||
+          get_key($step.with, "ssh-key") =~ "{{.*vars\..*" ||
           get_key($step.with, "ssh-key") =~ ".*-----BEGIN.*"
         )
       ), highlight: "with.ssh-key"
@@ -27,9 +27,9 @@ module Claws
       on_step %(
         $step.meta.action.name == "actions/checkout" &&
         (
-          get_key($step.with, "token") =~ ".*secrets.*" ||
-          get_key($step.with, "token") =~ ".*env..*" ||
-          get_key($step.with, "token") =~ ".*vars..*" ||
+          get_key($step.with, "token") =~ "{{.*secrets\..*" ||
+          get_key($step.with, "token") =~ "{{.*env\..*" ||
+          get_key($step.with, "token") =~ "{{.*vars\..*" ||
           get_key($step.with, "token") =~ "gh[a-z]_.*"
         )
       ), highlight: "with.token"
