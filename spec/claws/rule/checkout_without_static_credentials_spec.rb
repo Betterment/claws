@@ -158,6 +158,5 @@ RSpec.describe Claws::Rule::CheckoutWithStaticCredentials do
       expect(violations[0].line).to eq(10)
       expect(violations[0].name).to eq("CheckoutWithStaticCredentials")
     end
-
   end
 end
