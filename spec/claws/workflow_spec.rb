@@ -78,4 +78,58 @@ RSpec.describe Workflow do
       expect(BaseRule.parse_rule("$step.with.type_float == 1.2").eval_with(values:)).to eq true
     end
   end
+
+  context "built in function - get_key" do
+    it "extracts the key from a map" do
+      workflow = described_class.load(<<~YAML)
+        on:
+          pull_request
+
+        jobs:
+          deploy:
+            steps:
+              - name: checkout
+                uses: actions/checkout@v6
+                with:
+                  key: value
+      YAML
+
+      values = { workflow:, job: workflow.jobs["deploy"], step: workflow.jobs["deploy"]["steps"][0] }
+      expect(BaseRule.parse_rule('get_key($step.with, "key")').eval_with(values:)).to eq "value"
+    end
+
+    it "returns nil if the key isn't found" do
+      workflow = described_class.load(<<~YAML)
+        on:
+          pull_request
+
+        jobs:
+          deploy:
+            steps:
+              - name: checkout
+                uses: actions/checkout@v6
+                with:
+                  key: value
+      YAML
+
+      values = { workflow:, job: workflow.jobs["deploy"], step: workflow.jobs["deploy"]["steps"][0] }
+      expect(BaseRule.parse_rule('get_key($step.with, "nonexistent")').eval_with(values:)).to eq nil
+    end
+
+    it "returns nil if the input map is nil" do
+      workflow = described_class.load(<<~YAML)
+        on:
+          pull_request
+
+        jobs:
+          deploy:
+            steps:
+              - name: checkout
+                uses: actions/checkout@v6
+      YAML
+
+      values = { workflow:, job: workflow.jobs["deploy"], step: workflow.jobs["deploy"]["steps"][0] }
+      expect(BaseRule.parse_rule('get_key($step.with, "nonexistent")').eval_with(values:)).to eq nil
+    end
+  end
 end
