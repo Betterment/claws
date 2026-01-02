@@ -21,7 +21,7 @@ class BaseRule
                 # sometimes we might want to traverse it as a Ruby object
                 # annoying up front, but the edge cases are few and keeps expressions simple
                 path.to_s.split(".").reduce(object) do |current, part|
-                  return nil if current.nil?
+                  return default if current.nil?
 
                   if current.is_a?(Hash)
                     # Prefer exact string key, then symbol key
@@ -29,6 +29,8 @@ class BaseRule
                       current[part]
                     elsif current.key?(part.to_sym)
                       current[part.to_sym]
+                    else
+                      default
                     end
                   else
                     current.respond_to?(part) ? current.public_send(part) : default
