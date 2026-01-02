@@ -76,12 +76,11 @@ RSpec.describe Claws::Rule::GlobalPermissionsBlock do
               - main
 
         jobs:
-          permissions:
-            contents: read
-            pages: write
-            id-token: write
-
           build:
+            permissions:
+              contents: read
+              pages: write
+              id-token: write
             runs-on: ubuntu-latest
             steps:
               - name: Checkout
