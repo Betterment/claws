@@ -395,6 +395,121 @@ This rule only looks for user supplied branches being checked out for `pull_requ
 |-------------|------------------------|---------------------------------------------------------------|
 | `risky_events` | ["pull_request_target", "workflow_dispatch"]               | An array of Github events you consider risky. |
 
+### ImplicitPersistCredentials
+
+By default, all versions of the official [`actions/checkout`](https://github.com/actions/checkout) have a default value of `true` for the `persist-credentials` setting. This means the temporary credentials generated to clone a repository's source code will be written to disk. This is necessary if you intend on using the `git` command line tool to further interact with this repository (e.g. check out a specific branch or push new commits to it). However, if you don't intend on doing this, this opens up an unnecessary risk. Untrusted or otherwise malicious code can find these temporary credentials and use them to access source code and other resources that would otherwise not have been exposed by your workflow. For example, if during a supply chain attack someone steals your job's environment variables, they may be able to use these credentials from their own system to access private repositories.
+
+For example, take the following workflow:
+
+```yaml
+name: Ruby CI (PR)
+
+on: [pull_request]
+
+jobs:
+  bundle-install:
+    name: Bundle install
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+
+      - name: Install dependencies
+        run: bundle install
+```
+
+Because `persist-credentials` is not specified, its value is `true` by default. That means the temporary Github credentials used to clone the repository will be either written to `.git/config` or to a temporary directory. Both of these locations will be accessible to subsequent steps, so if for example we were installing a malicious dependency with the `bundle install` command, it could find those credentials on disk and send them to someone via the network, letting them clone this repository and potentially access even other repositories. In this workflow, we aren't interacting with git beyond that checkout, so we don't need to persist the credential. We can fix this by setting `persist-credentials` to `false`:
+
+```yaml
+# ...
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+```
+
+However, if you do need to interact with the repository via git, you should explicitly set `persist-credentials` to `true`. This way, you signal to your reviewers that your workflow interacts with the local checkout in a way that needs this credential.
+
+Note, there is [a Github Issue tracking this](https://github.com/actions/checkout/issues/485) that has been open for a few years by now.
+
+### GlobalPermissionsBlock
+
+[The permissions block](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions) dictates which permissions a workflow or a job have or don't have. When permissions are defined at the workflow level, each job gets the same set of permissions, potentially giving more access than a job or a step truly needs. Instead, permissions should be defined at the job level, making sure each job and step has access only to the permissions it needs. This can minimize the impact of untrusted code using an overly permissive `$GITHUB_TOKEN`, such as during a supply chain attack.
+
+For example, take the following workflow:
+
+```yaml
+name: Build and Deploy
+
+on: [push]
+
+permissions:
+  id-token: write
+
+jobs:
+  build:
+    name: Build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Upload build artifact to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}-${{ steps.meta.outputs.version }}
+          path: ${{ env.ARTIFACT_NAME }}.tgz
+
+  deploy:
+    name: Deploy
+    needs: build
+
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload release artifact to S3
+        run: |
+          aws s3 cp "${ARTIFACT_NAME}.tgz" "s3://${S3_BUCKET}/${{ needs.build.outputs.s3_key }}"
+```
+
+This sample workflow deploys to AWS using OIDC, so it needs the `id-token: write` permission to generate temporary AWS credentials. However, because this permission is defined at the workflow level, the `build` job can also use OIDC to grab temporary AWS credentials. This means if this job has some kind of vulnerability, an attacker could use it to gain access to an AWS environment that would otherwise have been entirely inaccessible.
+
+To remedy this, we should move the `permissions:` block into the specific job that actually needs this permission:
+
+```yaml
+# ...
+  deploy:
+    name: Deploy
+    needs: build
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload release artifact to S3
+        run: |
+          aws s3 cp "${ARTIFACT_NAME}.tgz" "s3://${S3_BUCKET}/${{ needs.build.outputs.s3_key }}"
+```
+
+This limits AWS OIDC access to just `deploy`.
+
 ## Walkthrough
 
 Let's start with a minimal configuration file that enables some basic Rules.
