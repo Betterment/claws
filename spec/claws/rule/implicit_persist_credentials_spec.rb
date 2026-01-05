@@ -35,7 +35,7 @@ RSpec.describe Claws::Rule::ImplicitPersistCredentials do
             steps:
             - uses: actions/checkout@v6
               with:
-                persist-credentials: false
+                persist-credentials: true
             - run: |
                 rake setup
                 rake spec
