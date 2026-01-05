@@ -16,7 +16,7 @@ class BaseRule
               intersection: ->(arr1, arr2) { arr1.intersection arr2 },
               get_key: ->(arr, key) { (arr || {}).fetch(key, nil) },
               count: ->(n) { n.length },
-              dig: lambda { |object, path, default: nil|
+              dig: lambda { |object, path, default = nil|
                 # sometimes we might want to traverse the object as if it were a hash
                 # sometimes we might want to traverse it as a Ruby object
                 # annoying up front, but the edge cases are few and keeps expressions simple
