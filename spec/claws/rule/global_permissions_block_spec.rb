@@ -41,6 +41,48 @@ RSpec.describe Claws::Rule::GlobalPermissionsBlock do
       expect(violations[0].name).to eq("GlobalPermissionsBlock")
     end
 
+    it "flags a workflow for global permissions even if some jobs specify their own" do
+      violations = analyze(<<~YAML)
+        name: publish docs
+
+        on:
+          push:
+            branches:
+              - main
+
+        # default for all jobs
+        permissions:
+          contents: read
+          pages: write
+
+        jobs:
+          build:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v6
+
+          deploy:
+            needs: build
+            runs-on: ubuntu-latest
+            # override defaults
+            permissions:
+              contents: read
+              pages: write
+              id-token: write
+            environment:
+              name: github-pages
+            steps:
+              - name: Deploy to GitHub Pages
+                id: deployment
+                uses: actions/deploy-pages@v4
+      YAML
+
+      expect(violations.count).to eq(1)
+      expect(violations[0].line).to eq(9)
+      expect(violations[0].name).to eq("GlobalPermissionsBlock")
+    end
+
     it "does not flag a workflow with a top level permissions block if there is just one job" do
       violations = analyze(<<~YAML)
         name: pretend to publish docs
