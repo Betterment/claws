@@ -1,10 +1,10 @@
 class BaseRule
   attr_accessor :on_workflow, :on_job, :on_step, :configuration
 
-  def self.parse_rule(rule) # rubocop:disable Metrics/AbcSize
+  def self.parse_rule(rule) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     ExpressionParser.parse_expression(rule).tap do |expression|
       expression.instance_eval do
-        def ctx # rubocop:disable Metrics/AbcSize
+        def ctx # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
           @ctx ||= Context.new(
             default: {},
             methods: {
@@ -15,7 +15,28 @@ class BaseRule
               difference: ->(arr1, arr2) { arr1.difference arr2 },
               intersection: ->(arr1, arr2) { arr1.intersection arr2 },
               get_key: ->(arr, key) { (arr || {}).fetch(key, nil) },
-              count: ->(n) { n.length }
+              count: ->(n) { n.length },
+              dig: lambda { |object, path, default = nil|
+                # sometimes we might want to traverse the object as if it were a hash
+                # sometimes we might want to traverse it as a Ruby object
+                # annoying up front, but the edge cases are few and keeps expressions simple
+                path.to_s.split(".").reduce(object) do |current, part|
+                  return default if current.nil?
+
+                  if current.is_a?(Hash)
+                    # Prefer exact string key, then symbol key
+                    if current.key?(part)
+                      current[part]
+                    elsif current.key?(part.to_sym)
+                      current[part.to_sym]
+                    else
+                      default
+                    end
+                  else
+                    current.respond_to?(part) ? current.public_send(part) : default
+                  end
+                end
+              }
             }
           )
         end
