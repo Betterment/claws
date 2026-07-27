@@ -88,7 +88,7 @@ RSpec.describe Workflow do
       YAML
 
       values = { workflow:, job: workflow.jobs["deploy"], step: workflow.jobs["deploy"]["steps"][0] }
-      expect(BaseRule.parse_rule('$workflow.env.nonexistent == null').eval_with(values:)).to eq true
+      expect(BaseRule.parse_rule("$workflow.env.nonexistent == null").eval_with(values:)).to eq true
     end
   end
 
