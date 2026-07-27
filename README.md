@@ -294,7 +294,7 @@ In some cases, a static access token or deploy key may still be necessary, espec
 
 ### ConfigureAwsStaticCredentials
 
-This rule flags any uses of `aws-actions/configure-aws-credentials` that authenticate with long-lived AWS access keys. Static credentials stored in GitHub secrets, variables, or environment variables can be tricky to audit and rotate. In the event of an incident where they are leaked, incident response may be tough.
+This rule flags long-lived AWS credentials in Github workflows — not just `aws-actions/configure-aws-credentials`, but also `env:` blocks and common shell patterns (`export`, `$GITHUB_ENV`, `aws configure set`). Static credentials stored in GitHub secrets, variables, or environment variables can be tricky to audit and rotate. In the event of an incident where they are leaked, incident response may be tough.
 
 Where possible, configure AWS to trust GitHub's OIDC provider and use `role-to-assume` to get short-lived credentials for each workflow run. Check [GitHub's documentation on configuring OIDC in AWS](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-for-github-actions/configuring-openid-connect-in-amazon-web-services) for setup instructions.
 

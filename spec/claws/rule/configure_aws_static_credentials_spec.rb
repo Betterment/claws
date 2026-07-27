@@ -82,6 +82,107 @@ RSpec.describe Claws::Rule::ConfigureAwsStaticCredentials do
       expect(violations[0].name).to eq("ConfigureAwsStaticCredentials")
     end
 
+    it "flags workflow-level env vars" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            steps:
+              - run: echo hi
+      YAML
+
+      expect(violations.count).to eq(2)
+    end
+
+    it "flags job-level env vars" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            env:
+              AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+              AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            steps:
+              - run: echo hi
+      YAML
+
+      expect(violations.count).to eq(2)
+    end
+
+    it "flags step-level env vars" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            steps:
+              - run: aws s3 ls
+                env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      YAML
+
+      expect(violations.count).to eq(2)
+    end
+
+    it "flags export in a run step" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            steps:
+              - run: |
+                  export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+                  export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws s3 ls
+      YAML
+
+      expect(violations.count).to eq(2)
+    end
+
+    it "flags writing aws creds to GITHUB_ENV" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            steps:
+              - run: |
+                  echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+                  echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+      YAML
+
+      expect(violations.count).to eq(2)
+    end
+
+    it "flags aws configure in a run step" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            steps:
+              - run: |
+                  aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      YAML
+
+      expect(violations.count).to eq(2)
+    end
+
     it "doesn't flag role-to-assume" do
       violations = analyze(<<~YAML)
         on: push
@@ -99,6 +200,26 @@ RSpec.describe Claws::Rule::ConfigureAwsStaticCredentials do
                   role-to-assume: arn:aws:iam::123456789012:role/github-actions-role
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: us-east-1
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
+
+    it "doesn't flag creds from step outputs" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            steps:
+              - id: aws-creds
+                run: echo "not checked here"
+
+              - run: aws s3 ls
+                env:
+                  AWS_ACCESS_KEY_ID: ${{ steps.aws-creds.outputs.access-key-id }}
+                  AWS_SECRET_ACCESS_KEY: ${{ steps.aws-creds.outputs.secret-access-key }}
       YAML
 
       expect(violations.count).to eq(0)
