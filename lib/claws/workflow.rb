@@ -4,7 +4,7 @@ require "claws/cli/yaml_with_lines"
 class Workflow
   extend Forwardable
 
-  attr_accessor :data, :on, :jobs, :name, :meta, :permissions
+  attr_accessor :data, :on, :jobs, :name, :meta, :permissions, :env
 
   def_delegators :@workflow, :get_line, :include?, :keys
 
@@ -19,6 +19,7 @@ class Workflow
     extract_normalized_jobs(@workflow)
     extract_normalized_name(@workflow)
     extract_permissions(@workflow)
+    extract_env(@workflow)
 
     @raw_yaml = raw_yaml
   end
@@ -90,6 +91,10 @@ class Workflow
   def extract_permissions(input)
     @permissions = input["permissions"]
     @meta["permissions"] = normalize_permissions(input["permissions"])
+  end
+
+  def extract_env(input)
+    @env = input["env"]
   end
 
   def normalize_permissions(input) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
