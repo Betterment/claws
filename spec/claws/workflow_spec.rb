@@ -90,6 +90,24 @@ RSpec.describe Workflow do
       values = { workflow:, job: workflow.jobs["deploy"], step: workflow.jobs["deploy"]["steps"][0] }
       expect(BaseRule.parse_rule("$workflow.env.nonexistent == null").eval_with(values:)).to eq true
     end
+
+    it "returns null if there is no global env block at all" do
+      workflow = described_class.load(<<~YAML)
+        on:
+          pull_request
+
+        jobs:
+          deploy:
+            steps:
+              - id: merge this pull request
+                name: automerge
+                uses: "pascalgn/automerge-action@v0.15.5"
+      YAML
+
+      values = { workflow:, job: workflow.jobs["deploy"], step: workflow.jobs["deploy"]["steps"][0] }
+      expect(BaseRule.parse_rule("$workflow.env == null").eval_with(values:)).to eq true
+      expect(BaseRule.parse_rule("$workflow.env.nonexistent == null").eval_with(values:)).to eq true
+    end
   end
 
   context "line information" do
