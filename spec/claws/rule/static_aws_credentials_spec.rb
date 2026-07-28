@@ -94,7 +94,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
           deploy:
             runs-on: ubuntu-latest
             steps:
-              - run: echo hi
+              - run: aws sts get-caller-identity
       YAML
 
       expect(violations.count).to eq(2)
@@ -111,7 +111,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             steps:
-              - run: echo hi
+              - run: aws sts get-caller-identity
       YAML
 
       expect(violations.count).to eq(2)
@@ -162,6 +162,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
               - run: |
                   echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
                   echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+                  aws sts get-caller-identity
       YAML
 
       expect(violations.count).to eq(2)
@@ -178,6 +179,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
               - run: |
                   aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
                   aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws sts get-caller-identity
       YAML
 
       expect(violations.count).to eq(2)
@@ -200,6 +202,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   role-to-assume: arn:aws:iam::123456789012:role/github-actions-role
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: us-east-1
+              - run: aws sts get-caller-identity
       YAML
 
       expect(violations.count).to eq(0)
