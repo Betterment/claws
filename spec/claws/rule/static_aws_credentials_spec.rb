@@ -228,6 +228,23 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect(violations.count).to eq(0)
     end
 
+    it "doesn't flag export from env in a run step" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            steps:
+              - run: |
+                  export AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}
+                  export AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}
+                  aws sts get-caller-identity
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
+
     it "doesn't flag unrelated actions" do
       violations = analyze(<<~YAML)
         on: push

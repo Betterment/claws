@@ -71,17 +71,19 @@ module Claws
       ), highlight: "env.AWS_SECRET_ACCESS_KEY"
 
       on_step %(
-        $step.run =~ ".*AWS_ACCESS_KEY_ID.*(\{\{.*secrets\.|\{\{.*vars\.|\{\{.*env\.|AKIA)" ||
-        $step.run =~ ".*export AWS_ACCESS_KEY_ID.*(\{\{.*secrets\.|\{\{.*vars\.|\{\{.*env\.)" ||
-        $step.run =~ ".*GITHUB_ENV.*AWS_ACCESS_KEY_ID.*(\{\{.*secrets\.|\{\{.*vars\.|\{\{.*env\.)" ||
-        $step.run =~ ".*aws configure set aws_access_key_id.*(\{\{.*secrets\.|\{\{.*vars\.|\{\{.*env\.|AKIA)"
+        $step.run =~ ".*export AWS_ACCESS_KEY_ID=.*\\{\\{.*(secrets\\.|vars\\.)" ||
+        $step.run =~ ".*AWS_ACCESS_KEY_ID=.*\\{\\{.*(secrets\\.|vars\\.)" ||
+        $step.run =~ ".*AWS_ACCESS_KEY_ID=.*AKIA" ||
+        $step.run =~ ".*GITHUB_ENV.*AWS_ACCESS_KEY_ID=.*\\{\\{.*(secrets\\.|vars\\.)" ||
+        $step.run =~ ".*aws configure set aws_access_key_id .*\\{\\{.*(secrets\\.|vars\\.)" ||
+        $step.run =~ ".*aws configure set aws_access_key_id .*AKIA"
       ), highlight: "run"
 
       on_step %(
-        $step.run =~ ".*AWS_SECRET_ACCESS_KEY.*(\{\{.*secrets\.|\{\{.*vars\.|\{\{.*env\.)" ||
-        $step.run =~ ".*export AWS_SECRET_ACCESS_KEY.*(\{\{.*secrets\.|\{\{.*vars\.|\{\{.*env\.)" ||
-        $step.run =~ ".*GITHUB_ENV.*AWS_SECRET_ACCESS_KEY.*(\{\{.*secrets\.|\{\{.*vars\.|\{\{.*env\.)" ||
-        $step.run =~ ".*aws configure set aws_secret_access_key.*(\{\{.*secrets\.|\{\{.*vars\.|\{\{.*env\.)"
+        $step.run =~ ".*export AWS_SECRET_ACCESS_KEY=.*\\{\\{.*(secrets\\.|vars\\.)" ||
+        $step.run =~ ".*AWS_SECRET_ACCESS_KEY=.*\\{\\{.*(secrets\\.|vars\\.)" ||
+        $step.run =~ ".*GITHUB_ENV.*AWS_SECRET_ACCESS_KEY=.*\\{\\{.*(secrets\\.|vars\\.)" ||
+        $step.run =~ ".*aws configure set aws_secret_access_key .*\\{\\{.*(secrets\\.|vars\\.)"
       ), highlight: "run"
     end
   end
