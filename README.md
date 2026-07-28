@@ -292,7 +292,7 @@ If you need a Github Token to perform some authenticated action where the defaul
 
 In some cases, a static access token or deploy key may still be necessary, especially for APIs that are not yet supported by Github App Tokens. In these cases, make sure to limit the scope of the access token to the bare minimum necessary to function.
 
-### ConfigureAwsStaticCredentials
+### StaticAwsCredentials
 
 This rule flags long-lived AWS credentials in Github workflows — not just `aws-actions/configure-aws-credentials`, but also `env:` blocks and common shell patterns (`export`, `$GITHUB_ENV`, `aws configure set`). Static credentials stored in GitHub secrets, variables, or environment variables can be tricky to audit and rotate. In the event of an incident where they are leaked, incident response may be tough.
 

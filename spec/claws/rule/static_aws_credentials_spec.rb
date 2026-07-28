@@ -1,4 +1,4 @@
-RSpec.describe Claws::Rule::ConfigureAwsStaticCredentials do
+RSpec.describe Claws::Rule::StaticAwsCredentials do
   before do
     load_detection
   end
@@ -22,7 +22,7 @@ RSpec.describe Claws::Rule::ConfigureAwsStaticCredentials do
       YAML
 
       expect(violations.count).to eq(2)
-      expect(violations.map(&:name).uniq).to eq(["ConfigureAwsStaticCredentials"])
+      expect(violations.map(&:name).uniq).to eq(["StaticAwsCredentials"])
     end
 
     it "flags static aws credentials via repo/org vars" do
@@ -41,7 +41,7 @@ RSpec.describe Claws::Rule::ConfigureAwsStaticCredentials do
       YAML
 
       expect(violations.count).to eq(2)
-      expect(violations[0].name).to eq("ConfigureAwsStaticCredentials")
+      expect(violations[0].name).to eq("StaticAwsCredentials")
     end
 
     it "flags static aws credentials via env vars" do
@@ -60,7 +60,7 @@ RSpec.describe Claws::Rule::ConfigureAwsStaticCredentials do
       YAML
 
       expect(violations.count).to eq(2)
-      expect(violations[0].name).to eq("ConfigureAwsStaticCredentials")
+      expect(violations[0].name).to eq("StaticAwsCredentials")
     end
 
     it "flags a hardcoded aws access key id" do
@@ -79,7 +79,7 @@ RSpec.describe Claws::Rule::ConfigureAwsStaticCredentials do
       YAML
 
       expect(violations.count).to eq(1)
-      expect(violations[0].name).to eq("ConfigureAwsStaticCredentials")
+      expect(violations[0].name).to eq("StaticAwsCredentials")
     end
 
     it "flags workflow-level env vars" do

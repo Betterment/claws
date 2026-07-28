@@ -1,6 +1,6 @@
 module Claws
   module Rule
-    class ConfigureAwsStaticCredentials < BaseRule
+    class StaticAwsCredentials < BaseRule
       description <<~DESC
         Avoid using long-lived AWS access keys in Github workflows. Static credentials
         can be tricky to audit and rotate, making them risky to hold onto, especially
@@ -9,7 +9,7 @@ module Claws
         Use GitHub's OIDC provider and authenticate with `role-to-assume` instead.
 
         For more information:
-        https://github.com/betterment/claws/blob/main/README.md#configureawsstaticcredentials
+        https://github.com/betterment/claws/blob/main/README.md#staticawscredentials
       DESC
 
       on_workflow %(
