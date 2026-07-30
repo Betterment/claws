@@ -16,4 +16,10 @@ module ClawsHelper
 
     {}
   end
+
+  def expect_rule_violations(violations, name:, lines:)
+    expect(violations.count).to eq(lines.length)
+    expect(violations.map(&:name).uniq).to eq([name])
+    expect(violations.map(&:line).sort).to eq(lines.sort)
+  end
 end

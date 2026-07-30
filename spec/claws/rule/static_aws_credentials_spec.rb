@@ -21,8 +21,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   aws-region: us-east-1
       YAML
 
-      expect(violations.count).to eq(2)
-      expect(violations.map(&:name).uniq).to eq(["StaticAwsCredentials"])
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [10, 11]
+      )
     end
 
     it "flags static aws credentials via repo/org vars" do
@@ -40,8 +43,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   aws-region: us-east-1
       YAML
 
-      expect(violations.count).to eq(2)
-      expect(violations[0].name).to eq("StaticAwsCredentials")
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [9, 10]
+      )
     end
 
     it "flags static aws credentials via env vars" do
@@ -59,8 +65,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   aws-region: us-east-1
       YAML
 
-      expect(violations.count).to eq(2)
-      expect(violations[0].name).to eq("StaticAwsCredentials")
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [9, 10]
+      )
     end
 
     it "flags a hardcoded aws access key id" do
@@ -78,8 +87,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   aws-region: us-east-1
       YAML
 
-      expect(violations.count).to eq(1)
-      expect(violations[0].name).to eq("StaticAwsCredentials")
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [9]
+      )
     end
 
     it "flags workflow-level env vars" do
@@ -97,7 +109,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
               - run: aws sts get-caller-identity
       YAML
 
-      expect(violations.count).to eq(2)
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [4, 5]
+      )
     end
 
     it "flags job-level env vars" do
@@ -114,7 +130,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
               - run: aws sts get-caller-identity
       YAML
 
-      expect(violations.count).to eq(2)
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [7, 8]
+      )
     end
 
     it "flags step-level env vars" do
@@ -131,7 +151,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       YAML
 
-      expect(violations.count).to eq(2)
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [9, 10]
+      )
     end
 
     it "flags export in a run step" do
@@ -148,7 +172,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   aws s3 ls
       YAML
 
-      expect(violations.count).to eq(2)
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [7, 7]
+      )
     end
 
     it "flags aws configure in a run step" do
@@ -165,7 +193,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   aws sts get-caller-identity
       YAML
 
-      expect(violations.count).to eq(2)
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [7, 7]
+      )
     end
 
     it "doesn't flag role-to-assume" do
