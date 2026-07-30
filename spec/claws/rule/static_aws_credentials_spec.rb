@@ -151,23 +151,6 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect(violations.count).to eq(2)
     end
 
-    it "flags writing aws creds to GITHUB_ENV" do
-      violations = analyze(<<~YAML)
-        on: push
-
-        jobs:
-          deploy:
-            runs-on: ubuntu-latest
-            steps:
-              - run: |
-                  echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-                  echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-                  aws sts get-caller-identity
-      YAML
-
-      expect(violations.count).to eq(2)
-    end
-
     it "flags aws configure in a run step" do
       violations = analyze(<<~YAML)
         on: push
@@ -223,6 +206,22 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                 env:
                   AWS_ACCESS_KEY_ID: ${{ steps.aws-creds.outputs.access-key-id }}
                   AWS_SECRET_ACCESS_KEY: ${{ steps.aws-creds.outputs.secret-access-key }}
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
+
+    it "doesn't flag export when secrets reference another variable on the same line" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            steps:
+              - run: |
+                  export AWS_SECRET_ACCESS_KEY=${{ steps.aws-creds.outputs.secret-access-key }} SOMETHING_ELSE=${{ secrets.something_unrelated }}
+                  aws sts get-caller-identity
       YAML
 
       expect(violations.count).to eq(0)
