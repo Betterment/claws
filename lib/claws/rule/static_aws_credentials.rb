@@ -2,9 +2,9 @@ module Claws
   module Rule
     class StaticAwsCredentials < BaseRule
       description <<~DESC
-        Avoid using long-lived AWS access keys in Github workflows. Static credentials
-        can be tricky to audit and rotate, making them risky to hold onto, especially
-        in the event of an incident where they may be leaked.
+        Avoid using long-lived AWS secret access keys in Github workflows. Static
+        credentials can be tricky to audit and rotate, making them risky to hold
+        onto, especially in the event of an incident where they may be leaked.
 
         Use GitHub's OIDC provider and authenticate with `role-to-assume` instead.
 
@@ -13,40 +13,16 @@ module Claws
       DESC
 
       on_workflow %(
-        get_key($workflow.env, "AWS_ACCESS_KEY_ID") =~ "{{.*secrets\..*" ||
-        get_key($workflow.env, "AWS_ACCESS_KEY_ID") =~ "{{.*env\..*" ||
-        get_key($workflow.env, "AWS_ACCESS_KEY_ID") =~ "{{.*vars\..*" ||
-        get_key($workflow.env, "AWS_ACCESS_KEY_ID") =~ "AKIA.*"
-      ), highlight: "env.AWS_ACCESS_KEY_ID"
-
-      on_workflow %(
         get_key($workflow.env, "AWS_SECRET_ACCESS_KEY") =~ "{{.*secrets\..*" ||
         get_key($workflow.env, "AWS_SECRET_ACCESS_KEY") =~ "{{.*env\..*" ||
         get_key($workflow.env, "AWS_SECRET_ACCESS_KEY") =~ "{{.*vars\..*"
       ), highlight: "env.AWS_SECRET_ACCESS_KEY"
 
       on_job %(
-        get_key($job.env, "AWS_ACCESS_KEY_ID") =~ "{{.*secrets\..*" ||
-        get_key($job.env, "AWS_ACCESS_KEY_ID") =~ "{{.*env\..*" ||
-        get_key($job.env, "AWS_ACCESS_KEY_ID") =~ "{{.*vars\..*" ||
-        get_key($job.env, "AWS_ACCESS_KEY_ID") =~ "AKIA.*"
-      ), highlight: "env.AWS_ACCESS_KEY_ID"
-
-      on_job %(
         get_key($job.env, "AWS_SECRET_ACCESS_KEY") =~ "{{.*secrets\..*" ||
         get_key($job.env, "AWS_SECRET_ACCESS_KEY") =~ "{{.*env\..*" ||
         get_key($job.env, "AWS_SECRET_ACCESS_KEY") =~ "{{.*vars\..*"
       ), highlight: "env.AWS_SECRET_ACCESS_KEY"
-
-      on_step %(
-        $step.meta.action.name == "aws-actions/configure-aws-credentials" &&
-        (
-          get_key($step.with, "aws-access-key-id") =~ "{{.*secrets\..*" ||
-          get_key($step.with, "aws-access-key-id") =~ "{{.*env\..*" ||
-          get_key($step.with, "aws-access-key-id") =~ "{{.*vars\..*" ||
-          get_key($step.with, "aws-access-key-id") =~ "AKIA.*"
-        )
-      ), highlight: "with.aws-access-key-id"
 
       on_step %(
         $step.meta.action.name == "aws-actions/configure-aws-credentials" &&
@@ -58,26 +34,13 @@ module Claws
       ), highlight: "with.aws-secret-access-key"
 
       on_step %(
-        get_key($step.env, "AWS_ACCESS_KEY_ID") =~ "{{.*secrets\..*" ||
-        get_key($step.env, "AWS_ACCESS_KEY_ID") =~ "{{.*env\..*" ||
-        get_key($step.env, "AWS_ACCESS_KEY_ID") =~ "{{.*vars\..*" ||
-        get_key($step.env, "AWS_ACCESS_KEY_ID") =~ "AKIA.*"
-      ), highlight: "env.AWS_ACCESS_KEY_ID"
-
-      on_step %(
         get_key($step.env, "AWS_SECRET_ACCESS_KEY") =~ "{{.*secrets\..*" ||
         get_key($step.env, "AWS_SECRET_ACCESS_KEY") =~ "{{.*env\..*" ||
         get_key($step.env, "AWS_SECRET_ACCESS_KEY") =~ "{{.*vars\..*"
       ), highlight: "env.AWS_SECRET_ACCESS_KEY"
 
       on_step %(
-        $step.run =~ "AWS_ACCESS_KEY_ID\\s*=\\s*\\$\\{\\{\\s*(secrets\\.|vars\\.)" ||
-        $step.run =~ "AWS_ACCESS_KEY_ID\\s*=\\s*AKIA" ||
-        $step.run =~ "aws configure set aws_access_key_id\\s+\\$\\{\\{\\s*(secrets\\.|vars\\.)" ||
-        $step.run =~ "aws configure set aws_access_key_id\\s+AKIA"
-      ), highlight: "run"
-
-      on_step %(
+        $step.run =~ "export\\s*AWS_SECRET_ACCESS_KEY\\s*=\\s*\\$\\{\\{\\s*(secrets\\.|vars\\.)" ||
         $step.run =~ "AWS_SECRET_ACCESS_KEY\\s*=\\s*\\$\\{\\{\\s*(secrets\\.|vars\\.)" ||
         $step.run =~ "aws configure set aws_secret_access_key\\s+\\$\\{\\{\\s*(secrets\\.|vars\\.)"
       ), highlight: "run"

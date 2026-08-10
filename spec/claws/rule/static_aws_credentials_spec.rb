@@ -24,7 +24,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect_rule_violations(
         violations,
         name: "StaticAwsCredentials",
-        lines: [10, 11]
+        lines: [11]
       )
     end
 
@@ -46,7 +46,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect_rule_violations(
         violations,
         name: "StaticAwsCredentials",
-        lines: [9, 10]
+        lines: [10]
       )
     end
 
@@ -68,11 +68,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect_rule_violations(
         violations,
         name: "StaticAwsCredentials",
-        lines: [9, 10]
+        lines: [10]
       )
     end
 
-    it "flags a hardcoded aws access key id" do
+    it "doesn't flag when only the access key id is static" do
       violations = analyze(<<~YAML)
         on: push
 
@@ -87,11 +87,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   aws-region: us-east-1
       YAML
 
-      expect_rule_violations(
-        violations,
-        name: "StaticAwsCredentials",
-        lines: [9]
-      )
+      expect(violations.count).to eq(0)
     end
 
     it "flags workflow-level env vars" do
@@ -112,7 +108,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect_rule_violations(
         violations,
         name: "StaticAwsCredentials",
-        lines: [4, 5]
+        lines: [5]
       )
     end
 
@@ -133,7 +129,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect_rule_violations(
         violations,
         name: "StaticAwsCredentials",
-        lines: [7, 8]
+        lines: [8]
       )
     end
 
@@ -154,7 +150,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect_rule_violations(
         violations,
         name: "StaticAwsCredentials",
-        lines: [9, 10]
+        lines: [10]
       )
     end
 
@@ -175,7 +171,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect_rule_violations(
         violations,
         name: "StaticAwsCredentials",
-        lines: [7, 7]
+        lines: [7]
       )
     end
 
@@ -196,7 +192,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       expect_rule_violations(
         violations,
         name: "StaticAwsCredentials",
-        lines: [7, 7]
+        lines: [7]
       )
     end
 
