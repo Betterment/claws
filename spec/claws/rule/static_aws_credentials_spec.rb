@@ -179,6 +179,26 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       )
     end
 
+    it "flags quoted export in a run step" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          deploy:
+            runs-on: ubuntu-latest
+            steps:
+              - run: |
+                  export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+                  aws sts get-caller-identity
+      YAML
+
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [7]
+      )
+    end
+
     it "flags aws configure in a run step" do
       violations = analyze(<<~YAML)
         on: push

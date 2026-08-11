@@ -44,11 +44,9 @@ module Claws
       ), highlight: "env.AWS_SECRET_ACCESS_KEY"
 
       on_step %(
-        $step.run =~ "export\\s*AWS_SECRET_ACCESS_KEY\\s*=\\s*\\$\\{\\{\\s*(secrets\\.|vars\\.)" ||
-        $step.run =~ "AWS_SECRET_ACCESS_KEY\\s*=\\s*\\$\\{\\{\\s*(secrets\\.|vars\\.)" ||
+        $step.run =~ "AWS_SECRET_ACCESS_KEY=['\\x22]?\\$\\{\\{\\s*(secrets\\.|vars\\.)" ||
         $step.run =~ "aws configure set aws_secret_access_key\\s+\\$\\{\\{\\s*(secrets\\.|vars\\.)" ||
-        $step.run =~ "export\\s*AWS_SECRET_ACCESS_KEY\\s*=\\s*[A-Za-z0-9/+=]+" ||
-        $step.run =~ "AWS_SECRET_ACCESS_KEY\\s*=\\s*[A-Za-z0-9/+=]+" ||
+        $step.run =~ "AWS_SECRET_ACCESS_KEY=['\\x22]?[A-Za-z0-9/+=]+" ||
         $step.run =~ "aws configure set aws_secret_access_key\\s+[A-Za-z0-9/+=]+"
       ), highlight: "run"
     end
