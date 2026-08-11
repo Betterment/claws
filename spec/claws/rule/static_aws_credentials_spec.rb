@@ -72,7 +72,7 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
       )
     end
 
-    it "doesn't flag when only the access key id is static" do
+    it "flags a hardcoded secret access key" do
       violations = analyze(<<~YAML)
         on: push
 
@@ -87,7 +87,11 @@ RSpec.describe Claws::Rule::StaticAwsCredentials do
                   aws-region: us-east-1
       YAML
 
-      expect(violations.count).to eq(0)
+      expect_rule_violations(
+        violations,
+        name: "StaticAwsCredentials",
+        lines: [10]
+      )
     end
 
     it "flags workflow-level env vars" do
