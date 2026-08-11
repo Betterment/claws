@@ -36,6 +36,7 @@ class Workflow
     return @on if key.to_s == "on"
     return @jobs if key.to_s == "jobs"
     return @name if key.to_s == "name"
+    return @env if key.to_s == "env"
   end
 
   def get_snippet(line, context: 3)

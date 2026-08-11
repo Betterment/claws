@@ -292,6 +292,12 @@ If you need a Github Token to perform some authenticated action where the defaul
 
 In some cases, a static access token or deploy key may still be necessary, especially for APIs that are not yet supported by Github App Tokens. In these cases, make sure to limit the scope of the access token to the bare minimum necessary to function.
 
+### StaticAwsCredentials
+
+This rule flags long-lived AWS credentials in Github workflows — not just `aws-actions/configure-aws-credentials`, but also `env:` blocks and common shell patterns (`export`, `aws configure set`). Static credentials stored in GitHub secrets, variables, or environment variables can be tricky to audit and rotate. In the event of an incident where they are leaked, incident response may be tough.
+
+Where possible, configure AWS to trust GitHub's OIDC provider and use `role-to-assume` to get short-lived credentials for each workflow run. Check [GitHub's documentation on configuring OIDC in AWS](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-for-github-actions/configuring-openid-connect-in-amazon-web-services) for setup instructions.
+
 ### UnapprovedRunners
 
 This rule flags workflows that use runners that they might not need or should not use. This can come in handy when an organization has available self hosted or otherwise expensive runners but wants to be particular about when they're used.
