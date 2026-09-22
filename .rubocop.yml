@@ -1,5 +1,7 @@
 AllCops:
-  TargetRubyVersion: 3.2.3
+  TargetRubyVersion: 3.4.10
+  NewCops: disable
+  SuggestExtensions: false
 
 Style/StringLiterals:
   Enabled: true
