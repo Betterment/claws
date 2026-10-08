@@ -24,10 +24,13 @@ module Claws
         )
       ), highlight: "with.ssh-key"
 
+      # secrets.GITHUB_TOKEN is the short lived per-run token, not a static credential.
+      # the regex retries at each secrets. reference, so GITHUB_TOKEN alongside another secret is still flagged.
+      # %() is double quoted, so \\b is needed to reach the regex as a word boundary (\b would be a backspace)
       on_step %(
         $step.meta.action.name == "actions/checkout" &&
         (
-          get_key($step.with, "token") =~ "{{.*secrets\..*" ||
+          get_key($step.with, "token") =~ "{{.*secrets\.(?!(?i:GITHUB_TOKEN)\\b)" ||
           get_key($step.with, "token") =~ "{{.*env\..*" ||
           get_key($step.with, "token") =~ "{{.*vars\..*" ||
           get_key($step.with, "token") =~ "gh[a-z]_.*"
