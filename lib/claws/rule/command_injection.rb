@@ -8,7 +8,9 @@ module Claws
         https://github.com/betterment/claws/blob/main/README.md#commandinjection
       DESC
 
-      on_step '$step.run =~ ".*{{.*(github\.event|inputs)\..*}}.*"', highlight: "run"
+      # only ${{ }} is expanded by the runner; bare {{ }} (e.g. gh-aw prompt templates) is literal text.
+      # (?:(?!\}\}).)* keeps the match inside a single expression while still allowing a lone } like format('{0}', ...)
+      on_step '$step.run =~ "\$\{\{(?:(?!\}\}).)*(github\.event|inputs)\."', highlight: "run"
     end
   end
 end
