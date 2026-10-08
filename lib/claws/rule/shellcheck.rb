@@ -66,8 +66,11 @@ module Claws
       def analyze_script(script, shell)
         sanitized_script, variables = *sanitize_script(script)
 
+        # scripts are piped in via stdin, so sourced files can never be followed
+        # https://www.shellcheck.net/wiki/SC1090
+        # https://www.shellcheck.net/wiki/SC1091
         Open3.popen3(
-          shellcheck_bin, "-", "-s", shell
+          shellcheck_bin, "-", "-s", shell, "-e", "SC1090,SC1091"
         ) do |stdin, stdout, stderr, wait_thr|
           stdin.write(sanitized_script)
           stdin.close
