@@ -102,6 +102,76 @@ RSpec.describe Claws::Rule::CheckoutWithStaticCredentials do
       expect(violations[0].name).to eq("CheckoutWithStaticCredentials")
     end
 
+    it "flags a static PAT used as a fallback for GITHUB_TOKEN" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          checkout:
+            runs-on: ubuntu
+            steps:
+              - uses: actions/checkout@v5
+                with:
+                  persist-credentials: true
+                  token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+      YAML
+
+      expect(violations.count).to eq(1)
+      expect(violations[0].line).to eq(10)
+      expect(violations[0].name).to eq("CheckoutWithStaticCredentials")
+    end
+
+    it "flags a static PAT whose name starts with GITHUB_TOKEN" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          checkout:
+            runs-on: ubuntu
+            steps:
+              - uses: actions/checkout@v5
+                with:
+                  repository: foo-corp/test-action
+                  token: ${{ secrets.GITHUB_TOKEN_PAT }}
+      YAML
+
+      expect(violations.count).to eq(1)
+      expect(violations[0].line).to eq(10)
+      expect(violations[0].name).to eq("CheckoutWithStaticCredentials")
+    end
+
+    it "doesn't flag the default GITHUB_TOKEN" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          checkout:
+            runs-on: ubuntu
+            steps:
+              - uses: actions/checkout@v5
+                with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
+
+    it "doesn't flag the default GITHUB_TOKEN regardless of case" do
+      violations = analyze(<<~YAML)
+        on: push
+
+        jobs:
+          checkout:
+            runs-on: ubuntu
+            steps:
+              - uses: actions/checkout@v5
+                with:
+                  token: ${{ secrets.github_token }}
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
+
     it "flags a static PAT stored in repo/org vars" do
       violations = analyze(<<~YAML)
         on: push
