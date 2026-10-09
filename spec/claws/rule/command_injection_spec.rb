@@ -103,5 +103,91 @@ RSpec.describe Claws::Rule::CommandInjection do
 
       expect(violations.count).to eq(0)
     end
+
+    it "flags an expression containing a lone closing brace" do
+      violations = analyze(<<~YAML)
+        name: Greeting
+
+        on:
+          issues:
+
+        jobs:
+          greet:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Greet
+                run: echo "${{ format('Title - {0}', github.event.issue.title) }}"
+      YAML
+
+      expect(violations.count).to eq(1)
+    end
+
+    it "flags an expression in the middle of a multiline script" do
+      violations = analyze(<<~YAML)
+        name: Greeting
+
+        on:
+          issues:
+
+        jobs:
+          greet:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Greet
+                run: |
+                  echo "starting"
+                  echo "${{ github.event.issue.title }}"
+                  echo "done"
+      YAML
+
+      expect(violations.count).to eq(1)
+    end
+
+    it "doesn't flag template syntax that isn't a github expression" do
+      # gh-aw lock files render prompts with handlebars-style {{#if}} blocks;
+      # the runner never expands these, so they can't inject into the shell
+      violations = analyze(<<~YAML)
+        name: CI Fixer
+
+        on:
+          pull_request:
+            types:
+              - labeled
+
+        jobs:
+          activation:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Create prompt
+                env:
+                  GH_AW_EXPR_463A214A: ${{ github.event.pull_request.number }}
+                run: |
+                  cat << 'GH_AW_PROMPT_EOF'
+                  {{#if github.event.pull_request.number || (github.aw.context.item_type == 'pull_request' && github.aw.context.item_number)}}
+                  - **pull-request-number**: #__GH_AW_EXPR_463A214A__
+                  {{/if}}
+                  GH_AW_PROMPT_EOF
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
+
+    it "doesn't flag text between two unrelated expressions" do
+      violations = analyze(<<~YAML)
+        name: Greeting
+
+        on:
+          push:
+
+        jobs:
+          greet:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Greet
+                run: echo "${{ matrix.os }}" > inputs.txt && echo "${{ matrix.version }}"
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
   end
 end
