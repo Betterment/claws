@@ -10,11 +10,11 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - '3.2.3'
+          - '3.4.10'
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up Ruby
-      uses: ruby/setup-ruby@ca041f971d66735f3e5ff1e21cc13e2d51e7e535 # v1.233.0
+      uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true

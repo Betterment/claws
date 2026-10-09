@@ -25,9 +25,9 @@ jobs:
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up Ruby 3.X
-      uses: ruby/setup-ruby@ca041f971d66735f3e5ff1e21cc13e2d51e7e535 # v1.233.0
+      uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
-        ruby-version: '3.2.3'
+        ruby-version: '3.4.10'
         bundler-cache: true
     - name: Run the default task
       run: bundle exec rake

@@ -40,9 +40,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set Up Ruby
-        uses: ruby/setup-ruby@d8d83c3960843afb664e821fed6be52f37da5267 # v1.231.0
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
-          ruby-version: '3.0'
+          ruby-version: '3.4'
       # Grab your configuration file however makes sense for you
       # We keep ours in a separate Github repo.
       - name: Set Up Claws Config

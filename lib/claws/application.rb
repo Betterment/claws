@@ -27,7 +27,7 @@ module Claws
     def get_violations(filename, workflow)
       violations = get_workflow_violations(filename, workflow)
 
-      workflow.jobs.each do |_job_name, job|
+      workflow.jobs.each_value do |job|
         violations += get_job_violations(filename, workflow, job)
 
         job.fetch("steps", []).each do |step|

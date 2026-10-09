@@ -18,7 +18,7 @@ class ExpressionParser
         startswith: ->(string, needle) { string.to_s.start_with? needle },
         endswith: ->(string, needle) { string.to_s.end_with? needle },
         difference: ->(arr1, arr2) { arr1.difference arr2 },
-        count: ->(n) { n.length }
+        count: lambda(&:length)
       }
     )
   end
