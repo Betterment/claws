@@ -43,7 +43,7 @@ RSpec.describe Claws::Rule::Shellcheck do
       YAML
 
       expect(Open3).to have_received(:popen3).with(
-        "/opt/homebrew/bin/shellcheck", "-", "-s", "bash"
+        "/opt/homebrew/bin/shellcheck", "-", "-s", "bash", "-e", "SC1090,SC1091"
       )
       expect(violations.count).to eq(1)
       expect(violations[0].line).to eq(8)
@@ -115,7 +115,7 @@ RSpec.describe Claws::Rule::Shellcheck do
       YAML
 
       expect(Open3).to have_received(:popen3).with(
-        "/opt/homebrew/bin/shellcheck", "-", "-s", "sh"
+        "/opt/homebrew/bin/shellcheck", "-", "-s", "sh", "-e", "SC1090,SC1091"
       )
       expect(violations.count).to eq(0)
     end
@@ -139,7 +139,7 @@ RSpec.describe Claws::Rule::Shellcheck do
       YAML
 
       expect(Open3).to have_received(:popen3).with(
-        "/opt/homebrew/bin/shellcheck", "-", "-s", "bash"
+        "/opt/homebrew/bin/shellcheck", "-", "-s", "bash", "-e", "SC1090,SC1091"
       )
       expect(violations.count).to eq(0)
     end
@@ -169,7 +169,7 @@ RSpec.describe Claws::Rule::Shellcheck do
       YAML
 
       expect(Open3).to have_received(:popen3).with(
-        "/a/b/c", "-", "-s", "bash"
+        "/a/b/c", "-", "-s", "bash", "-e", "SC1090,SC1091"
       )
       expect(violations.count).to eq(1)
       expect(violations[0].line).to eq(8)
@@ -221,7 +221,7 @@ RSpec.describe Claws::Rule::Shellcheck do
       YAML
 
       expect(Open3).to have_received(:popen3).with(
-        "/a/b/c", "-", "-s", "bash"
+        "/a/b/c", "-", "-s", "bash", "-e", "SC1090,SC1091"
       )
       expect(violations.count).to eq(0)
     end
