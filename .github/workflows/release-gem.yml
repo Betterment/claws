@@ -37,11 +37,31 @@ jobs:
     if: needs.build.result == 'success' && (github.event_name == 'push' || inputs.force_release)
     runs-on: ubuntu-latest
     name: Publish
+    permissions:
+      contents: write
     steps:
     - name: Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+    - name: Check for an existing release
+      id: version
+      run: |
+        VERSION=$(ruby -e 'print Gem::Specification.load("claws-scan.gemspec").version')
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        if gh release view "v$VERSION" > /dev/null 2>&1
+        then
+          echo "release_exists=true" >> "$GITHUB_OUTPUT"
+          if [[ "$FORCE_RELEASE" != "true" ]]
+          then
+            echo "v$VERSION is already released; skipping publish."
+          fi
+        else
+          echo "release_exists=false" >> "$GITHUB_OUTPUT"
+        fi
+      env:
+        GH_TOKEN: "${{ github.token }}"
+        FORCE_RELEASE: "${{ inputs.force_release }}"
     - name: Publish to RubyGems
-      if: needs.build.result == 'success' || github.event.inputs.force_release == true
+      if: steps.version.outputs.release_exists == 'false' || inputs.force_release
       run: |
         gem build claws-scan.gemspec --output release.gem
 
@@ -52,9 +72,21 @@ jobs:
         if [[ "$FORCE_RELEASE" == "true" ]]
         then
           gem push release.gem || exit 0
+        # Tolerate a gem that was pushed by an earlier run whose release step
+        # failed, so re-running the job can finish creating the release.
+        elif ! output=$(gem push release.gem 2>&1)
+        then
+          echo "$output"
+          grep -q "Repushing of gem versions is not allowed" <<< "$output" || exit 1
         else
-          gem push release.gem
+          echo "$output"
         fi
       env:
         GEM_HOST_API_KEY: "${{secrets.RUBYGEMS_AUTH_TOKEN}}"
         FORCE_RELEASE: "${{ github.event.inputs.force_release }}"
+    - name: Create GitHub release
+      if: steps.version.outputs.release_exists == 'false'
+      run: gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" --generate-notes
+      env:
+        GH_TOKEN: "${{ github.token }}"
+        VERSION: "${{ steps.version.outputs.version }}"
