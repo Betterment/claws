@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    claws-scan (0.10.0)
+    claws-scan (0.10.1)
       equation (~> 0.6)
       pry
       slop (~> 4.9)
