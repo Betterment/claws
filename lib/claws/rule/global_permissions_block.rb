@@ -9,7 +9,8 @@ module Claws
 
         This rule will flag workflows that have multiple jobs and a root level
         permissions block. If there is a root level permissions block but just one job,
-        it will not be flagged.
+        it will not be flagged. An empty root level block (`permissions: {}`) grants
+        nothing and will not be flagged either.
 
         For more information:
         https://github.com/betterment/claws/blob/main/README.md#globalpermissionsblock
@@ -17,9 +18,10 @@ module Claws
 
       on_workflow :test_root_level_permissions
 
-      def test_root_level_permissions(workflow:, job:, step:) # rubocop:disable Lint/UnusedMethodArgument
+      def test_root_level_permissions(workflow:, job:, step:) # rubocop:disable Lint/UnusedMethodArgument, Metrics/CyclomaticComplexity
         root_permission_block_line = workflow.keys.filter { |x| x == "permissions" }.first&.line
         return if root_permission_block_line.nil?
+        return if empty_permissions?(workflow.permissions)
 
         job_count = workflow["jobs"]&.count || 0
         return if job_count < 2
@@ -28,6 +30,12 @@ module Claws
           line: root_permission_block_line,
           description:
         )
+      end
+
+      private
+
+      def empty_permissions?(permissions)
+        permissions.is_a?(Hash) && permissions.empty?
       end
     end
   end

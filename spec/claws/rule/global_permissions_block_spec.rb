@@ -83,6 +83,105 @@ RSpec.describe Claws::Rule::GlobalPermissionsBlock do
       expect(violations[0].name).to eq("GlobalPermissionsBlock")
     end
 
+    it "does not flag an empty top level permissions block even if there is more than one job" do
+      violations = analyze(<<~YAML)
+        name: publish docs
+
+        on:
+          push:
+            branches:
+              - main
+
+        permissions: {}
+
+        jobs:
+          build:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v6
+
+          deploy:
+            needs: build
+            runs-on: ubuntu-latest
+            permissions:
+              contents: read
+              pages: write
+              id-token: write
+            steps:
+              - name: Deploy to GitHub Pages
+                id: deployment
+                uses: actions/deploy-pages@v4
+      YAML
+
+      expect(violations.count).to eq(0)
+    end
+
+    %w[read-all write-all].each do |access|
+      it "flags a top level #{access} permissions block if there is more than one job" do
+        violations = analyze(<<~YAML)
+          name: publish docs
+
+          on:
+            push:
+              branches:
+                - main
+
+          permissions: #{access}
+
+          jobs:
+            build:
+              runs-on: ubuntu-latest
+              steps:
+                - name: Checkout
+                  uses: actions/checkout@v6
+
+            deploy:
+              needs: build
+              runs-on: ubuntu-latest
+              steps:
+                - name: Deploy to GitHub Pages
+                  id: deployment
+                  uses: actions/deploy-pages@v4
+        YAML
+
+        expect(violations.count).to eq(1)
+        expect(violations[0].line).to eq(8)
+        expect(violations[0].name).to eq("GlobalPermissionsBlock")
+      end
+    end
+
+    it "flags a top level permissions block with no value if there is more than one job" do
+      violations = analyze(<<~YAML)
+        name: publish docs
+
+        on:
+          push:
+            branches:
+              - main
+
+        permissions:
+
+        jobs:
+          build:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Checkout
+                uses: actions/checkout@v6
+
+          deploy:
+            needs: build
+            runs-on: ubuntu-latest
+            steps:
+              - name: Deploy to GitHub Pages
+                id: deployment
+                uses: actions/deploy-pages@v4
+      YAML
+
+      expect(violations.count).to eq(1)
+      expect(violations[0].line).to eq(8)
+    end
+
     it "does not flag a workflow with a top level permissions block if there is just one job" do
       violations = analyze(<<~YAML)
         name: pretend to publish docs
